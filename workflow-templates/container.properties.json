@@ -1,4 +1,7 @@
 {
     "name": "Infralovers Container Workflow",
-    "description": "Container build workflow using semantic releases"
+    "description": "Container build workflow using semantic releases",
+    "filePatterns": [
+        "Dockerfile"
+    ]
 }
