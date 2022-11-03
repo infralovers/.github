@@ -30,7 +30,7 @@ jobs:
       if: github.event_name != 'pull_request'
       id: semrel
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
         prepend: true
         dry: true
 
@@ -41,12 +41,14 @@ jobs:
     steps:
 
     - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.BOT_ACCESS_TOKEN }} # needed for push to protected branch
 
     - uses: go-semantic-release/action@v1
       if: needs.prebuild.outputs.version != ''
       id: generate_changelog
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
         prepend: true
         changelog-file: CHANGELOG.md
 
@@ -54,5 +56,7 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       if: steps.generate_changelog.outputs.version != ''
       with:
+        commit_user_name: infralovers-machine
+        commit_user_email: il-machine@infralovers.com
         commit_message: 'chore(ci): commit changes from go-semantic-release'
         file_pattern: CHANGELOG.md
