@@ -1,3 +1,14 @@
+## 1.1.0 (2023-03-15)
+
+#### Feature
+
+* adding ghcr template; removing docker hub (43f6d7f9)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (60ee77e8)
+
+
 ## 1.0.1 (2022-10-14)
 
 #### Bug Fixes
