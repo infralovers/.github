@@ -1,3 +1,14 @@
+## 1.3.0 (2024-01-12)
+
+#### Feature
+
+* org readme (f3425a59)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (905cfc69)
+
+
 ## 1.2.0 (2024-01-12)
 
 #### Feature
