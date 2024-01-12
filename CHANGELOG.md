@@ -1,3 +1,14 @@
+## 1.2.0 (2024-01-12)
+
+#### Feature
+
+* hcp vault secrets sync (4ad56f6e)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (8caaf7b7)
+
+
 ## 1.1.0 (2023-03-15)
 
 #### Feature
