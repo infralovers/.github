@@ -1,0 +1,18 @@
+---
+
+name: 'Validate PR'
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - assigned
+
+
+jobs:
+  changelog-automation:
+    uses: ./.github/workflows/pre-validation.yml
+    secrets: inherit

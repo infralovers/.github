@@ -1,0 +1,32 @@
+---
+
+name: Release Automation template"
+
+on:
+  workflow_call:
+
+  # workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: go-semantic-release/action@v1
+      if: github.event_name != 'pull_request'
+      id: generate_changelog
+      with:
+        semantic_version: 23.0.2
+        extra_plugins: |
+          @semantic-release/changelog@6.0.3
+          @semantic-release/git@10.0.1
+          conventional-changelog-conventionalcommits@7.0.2
+        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        prepend: true
+        changelog-file: CHANGELOG.md
