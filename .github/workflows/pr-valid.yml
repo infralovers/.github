@@ -13,6 +13,6 @@ on:
 
 
 jobs:
-  changelog-automation:
+  pr-validation:
     uses: ./.github/workflows/pr-validation.yml
     secrets: inherit
