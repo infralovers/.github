@@ -8,6 +8,8 @@ on:
       - opened
       - edited
       - synchronize
+      - reopened
+      - assigned
 
 
 jobs:
