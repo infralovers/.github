@@ -10,6 +10,6 @@ on:
 
 jobs:
   changelog-automation:
-    uses: ./workflows/pre-validation.yml
+    uses: ./workflows/pre-validation.yml@main
     secrets: inherit
     

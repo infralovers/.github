@@ -10,6 +10,6 @@ on:
 
 jobs:
   changelog-automation:
-    uses: ./workflows/changelog-automation.yml
+    uses: ./workflows/changelog-automation.yml@main
     secrets: inherit
     
