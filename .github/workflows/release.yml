@@ -22,7 +22,7 @@ jobs:
       if: github.event_name != 'pull_request'
       id: generate_changelog
       env:
-        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
       with:
         semantic_version: 23.0.2
         extra_plugins: |
