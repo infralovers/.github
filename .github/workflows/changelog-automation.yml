@@ -1,5 +1,5 @@
 ---
-name: Infralovers Changelog Automation
+name: "Infralovers Changelog Automation template"
 
 on:
   # push:
@@ -20,7 +20,7 @@ jobs:
 
     - name: Check pre-commit presence
       id: precommit_exists
-      uses: andstor/file-existence-action@v1
+      uses: andstor/file-existence-action@v3
       with:
         files: ".pre-commit-config.yaml"
 
