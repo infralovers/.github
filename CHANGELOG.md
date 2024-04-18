@@ -1,3 +1,14 @@
+## 1.4.9 (2024-04-18)
+
+#### Bug Fixes
+
+* container flow (e188dc5d)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (3d91a363)
+
+
 ## 1.4.8 (2024-04-18)
 
 #### Bug Fixes
