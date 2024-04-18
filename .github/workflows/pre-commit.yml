@@ -35,7 +35,6 @@ jobs:
       if: steps.precommit_exists.outputs.files_exists == 'true'
 
     - uses: go-semantic-release/action@v1
-      if: github.event_name != 'pull_request'
       id: semrel
       with:
         github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
