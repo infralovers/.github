@@ -1,3 +1,15 @@
+## 1.4.7 (2024-04-18)
+
+#### Bug Fixes
+
+* **workflows:** refactor container workflow (525e6816)
+* increment auto commit action version (017bb961)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (164a9861)
+
+
 ## 1.4.6 (2024-04-18)
 
 #### Bug Fixes
