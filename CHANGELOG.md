@@ -1,3 +1,14 @@
+## 1.4.6 (2024-04-18)
+
+#### Bug Fixes
+
+* Adding PR Validation Step name (cde30176)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (4c2ceafc)
+
+
 ## 1.4.5 (2024-04-18)
 
 #### Bug Fixes
