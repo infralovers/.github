@@ -13,7 +13,9 @@ on:
 jobs:
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
+    secrets: inherit
 
   release:
     needs: [ prebuild ]
     uses: ./.github/workflows/release.yml
+    secrets: inherit

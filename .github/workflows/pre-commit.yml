@@ -3,6 +3,9 @@
 name: Pre-Commit validation
 
 on:
+  # pull_request:
+  #   branches:
+  #     - main
   workflow_call:
     outputs:
       version:
