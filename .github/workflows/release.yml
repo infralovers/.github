@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
     - name: Semantic Release
       uses: go-semantic-release/action@v1
