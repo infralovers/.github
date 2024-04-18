@@ -18,21 +18,18 @@ jobs:
       with:
         persist-credentials: false
 
-    - name: foo
-      run: |
-        cat > bla << EOF
-        |${{ secrets.BOT_ACCESS_TOKEN }}|
-        EOF
-        cat bla
 
-    - uses: cycjimmy/semantic-release-action@v4
-      if: github.event_name != 'pull_request'
+    - name: Semantic Release
+      uses: go-semantic-release/action@v1
       id: generate_changelog
-      env:
-        GITHUB_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
       with:
-        semantic_version: 23.0.2
-        extra_plugins: |
-          @semantic-release/changelog@6.0.3
-          @semantic-release/git@10.0.1
-          conventional-changelog-conventionalcommits@7.0.2
+        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        prepend: true
+        changelog-file: CHANGELOG.md
+
+    - name: Update changelog
+      uses: stefanzweifel/git-auto-commit-action@v4
+      if: steps.generate_changelog.outputs.version != ''
+      with:
+        commit_message: 'chore(ci): commit changes from go-semantic-release'
+        file_pattern: CHANGELOG.md
