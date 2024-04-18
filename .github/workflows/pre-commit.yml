@@ -1,0 +1,40 @@
+---
+
+name: Pre-Commit validation
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: 'The version of the release'
+        value: ${{ jobs.pre-commit.outputs.version }}
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semrel.outputs.version }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check pre-commit presence
+      id: precommit_exists
+      uses: andstor/file-existence-action@v3
+      with:
+        files: ".pre-commit-config.yaml"
+
+    - uses: actions/setup-python@v5
+      if: steps.precommit_exists.outputs.files_exists == 'true'
+      with:
+        python-version: '3.10'
+
+    - uses: pre-commit/action@v3.0.1
+      if: steps.precommit_exists.outputs.files_exists == 'true'
+
+    - uses: go-semantic-release/action@v1
+      if: github.event_name != 'pull_request'
+      id: semrel
+      with:
+        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        prepend: true
+        dry: true
