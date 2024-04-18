@@ -15,11 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: foo
       run: |
         cat > bla << EOF
-        ${{ secrets.BOT_ACCESS_TOKEN }}
+        |${{ secrets.BOT_ACCESS_TOKEN }}|
         EOF
         cat bla
 
