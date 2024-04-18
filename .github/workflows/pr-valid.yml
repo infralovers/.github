@@ -1,4 +1,6 @@
-name: 'Validate PR title'
+---
+
+name: 'Validate PR'
 
 on:
   pull_request_target:

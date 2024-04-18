@@ -1,5 +1,5 @@
 ---
-name: 'Validate PR title'
+name: 'Validate PR template'
 
 on:
   # pull_request_target:
