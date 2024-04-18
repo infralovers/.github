@@ -50,7 +50,7 @@ jobs:
         GHCR_IMAGE="ghcr.io/${{ github.repository }}"
         TAGS="${GHCR_IMAGE}:${VERSION}"
 
-        if [[ -n "${{ env.QUAY_USER }}"]]; then
+        if [[ -n "${{ env.QUAY_USER }}" ]]; then
           QUAY_IMAGE="quay.io/$IMAGE_REPO/$IMAGE_NAME"
           tags="${TAGS}:${QUAY_IMAGE}:${VERSION}""
         fi
