@@ -52,7 +52,7 @@ jobs:
 
         if [[ -n "${{ env.QUAY_USER }}" ]]; then
           QUAY_IMAGE="quay.io/$IMAGE_REPO/$IMAGE_NAME"
-          tags="${TAGS}:${QUAY_IMAGE}:${VERSION}""
+          tags="${TAGS}:${QUAY_IMAGE}:${VERSION}"
         fi
 
         if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
