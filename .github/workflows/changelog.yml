@@ -12,4 +12,3 @@ jobs:
   changelog-automation:
     uses: ./.github/workflows/changelog-automation.yml
     secrets: inherit
-    

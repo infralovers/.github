@@ -12,4 +12,3 @@ jobs:
   changelog-automation:
     uses: ./.github/workflows/pre-validation.yml
     secrets: inherit
-    
