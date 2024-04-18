@@ -30,3 +30,4 @@ jobs:
         github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
         prepend: true
         changelog-file: CHANGELOG.md
+        update-file: CHANGELOG.md
