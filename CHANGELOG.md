@@ -1,3 +1,16 @@
+## 1.3.1 (2024-04-18)
+
+#### Bug Fixes
+
+* update pre-commit and fixxes of findings (91517d8a)
+* update refs (a24b8fbf)
+* changelog automation update (7325d86b)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (e4a1a000)
+
+
 ## 1.3.0 (2024-01-12)
 
 #### Feature
