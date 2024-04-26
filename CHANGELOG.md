@@ -1,3 +1,15 @@
+## 1.4.11 (2024-04-26)
+
+#### Bug Fixes
+
+* release workflow changelog update should not trigger actions (64404cb7)
+* Adding workflows for cleanup (83985a49)
+
+#### Chores
+
+* **ci:** commit changes from go-semantic-release (0d925b77)
+
+
 ## 1.4.10 (2024-04-18)
 
 #### Bug Fixes
