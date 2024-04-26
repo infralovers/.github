@@ -1,3 +1,10 @@
+## 1.4.12 (2024-04-26)
+
+#### Bug Fixes
+
+* release workflow changelog update should not trigger actions (208ea38c)
+
+
 ## 1.4.11 (2024-04-26)
 
 #### Bug Fixes
