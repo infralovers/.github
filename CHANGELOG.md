@@ -1,3 +1,19 @@
+## 1.4.13 (2024-05-07)
+
+#### Bug Fixes
+
+* adding dedicated image to scan (337da612)
+* no debug (07760225)
+* adding debug log level (e3c21bb6)
+* update vars (6df37ca9)
+* update if (270cd5d9)
+* container build action (55aaf489)
+
+#### Code Refactoring
+
+* using inputs (449f2cd2)
+
+
 ## 1.4.12 (2024-04-26)
 
 #### Bug Fixes
