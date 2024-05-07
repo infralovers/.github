@@ -5,7 +5,11 @@ name: Container Workflow template"
 on:
   workflow_call:
     inputs:
-
+      release:
+        description: 'also run release workflow'
+        required: false
+        type: boolean
+        default: false
       dockerfile:
         description: 'The path to the Dockerfile'
         required: true
@@ -33,6 +37,16 @@ on:
         default: ${{ github.repository_owner }}
 
 jobs:
+
+  foo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: bla
+      run: |
+        env
+        echo "settings ${QUAY_USER} ${QUAY_TOKEN} ${BOT_ACCESS_TOKEN}" > tmp
+        cat tmp
+
 
   pre-commit:
     uses: ./.github/workflows/pre-commit.yml
@@ -74,14 +88,14 @@ jobs:
         GHCR_IMAGE="ghcr.io/${{ github.repository }}"
         TAGS="${GHCR_IMAGE}:${VERSION}"
 
-        if [[ -n "${{ env.QUAY_USER }}" ]]; then
+        if [[ -n "${{ secrets.QUAY_USER }}" ]]; then
           QUAY_IMAGE="quay.io/$IMAGE_REPO/$IMAGE_NAME"
           tags="${TAGS}:${QUAY_IMAGE}:${VERSION}"
         fi
 
         if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
           TAGS="$TAGS,${GHCR_IMAGE}:latest"
-          if [[ -n "${{ env.QUAY_USER }}" ]]; then
+          if [[ -n "${{ secrets.QUAY_USER }}" ]]; then
             TAGS="$TAGS,${QUAY_IMAGE}:latest"
           fi
         fi
@@ -122,8 +136,8 @@ jobs:
       uses: docker/login-action@v3
       with:
          registry: quay.io
-         username: ${{ env.QUAY_USER }}
-         password: ${{ env.QUAY_TOKEN }}
+         username: ${{ secrets.QUAY_USER }}
+         password: ${{ secrets.QUAY_TOKEN }}
 
     - name: Login to GitHub Container Registry
       if: needs.pre-commit.outputs.version != ''
@@ -131,7 +145,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ env.BOT_ACCESS_TOKEN }}
+        password: ${{ secrets.BOT_ACCESS_TOKEN }}
 
     - name: Publish container
       if: needs.pre-commit.outputs.version != ''
@@ -140,6 +154,12 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ steps.get_dir.outputs.docker_directory }}
           file: ${{ inputs.dockerfile }}
-          push: ${{ github.event_name != 'pull_request' && needs.prebuild.outputs.version != '' }}
+          push: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
           tags: ${{ steps.prep.outputs.tags }}
           platforms: ${{ inputs.platforms }}
+
+  release:
+    needs: [ pre-commit, build ]
+    if: inputs.release && github.event_name != 'pull_request'
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
