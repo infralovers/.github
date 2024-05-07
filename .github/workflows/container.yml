@@ -5,11 +5,32 @@ name: Container Workflow template"
 on:
   workflow_call:
     inputs:
+
       dockerfile:
         description: 'The path to the Dockerfile'
         required: true
         type: string
         default: 'Dockerfile'
+      score:
+        description: 'The score threshold for the image'
+        required: false
+        type: number
+        default: 60
+      platforms:
+        description: 'The platforms to build for'
+        required: false
+        type: string
+        default: 'linux/amd64'
+      image_name:
+        description: 'The name of the image'
+        required: false
+        type: string
+        default: ''
+      image_repo:
+        description: 'The repository of the image'
+        required: false
+        type: string
+        default: ${{ github.repository_owner }}
 
 jobs:
 
@@ -34,23 +55,14 @@ jobs:
       id: get_dir
       run: |
         echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
-        if [ -z "${{ env.PLATFORMS }}" ]; then
-          echo "PLATFORMS=linux/amd64" >> $GITHUB_ENV
-        fi
-        if [ -z "${{ env.SCORE }}" ]; then
-          echo "SCORE=60" >> $GITHUB_ENV
-        fi
 
     - name: Prepare tagging
       id: prep
       run: |
         IMAGE_NAME=$(basename ${{ github.repository }})
-        IMAGE_REPO=${{ github.repository_owner }}
-        if [[ -n "${{ secrets.IMAGE_NAME }}" ]]; then
-          IMAGE_NAME="${{ secrets.IMAGE_NAME }}"
-        fi
-        if [[ -n "${{ secrets.IMAGE_REPO }}" ]]; then
-          IMAGE_REPO="${{ secrets.IMAGE_REPO }}"
+        IMAGE_REPO=${{ inputs.image_repo }}
+        if [[ -n "${{ inputs.image_name }}" ]]; then
+          IMAGE_NAME="${{ inputs.image_name }}"
         fi
         VERSION="dev"
         if [[ '${{ needs.pre-commit.outputs.version }}'  != '' ]]; then
@@ -83,7 +95,7 @@ jobs:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
-        platforms: ${{ env.PLATFORMS }}
+        platforms: ${{ inputs.platforms }}
 
     - name: Build Container Image
       id: docker_build
@@ -94,7 +106,7 @@ jobs:
           file: ${{ inputs.dockerfile }}
           load: true
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ env.PLATFORMS }}
+          platforms: ${{ inputs.platforms }}
 
     - name: Scan Docker Image
       uses: mondoohq/actions/docker-image@v11.0.0
@@ -102,7 +114,7 @@ jobs:
           MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
       with:
           image: ${{ steps.prep.outputs.tags }}
-          score-threshold: ${{ env.SCORE }}
+          score-threshold: ${{ inputs.score }}
 
     - name: Login to Quay
       if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
@@ -129,4 +141,4 @@ jobs:
           file: ${{ inputs.dockerfile }}
           push: ${{ github.event_name != 'pull_request' && needs.prebuild.outputs.version != '' }}
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ env.PLATFORMS }}
+          platforms: ${{ inputs.platforms }}
