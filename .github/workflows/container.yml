@@ -87,6 +87,7 @@ jobs:
         fi
         echo "settings tag ${TAGS}"
         echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+        echo "ghcr_tag=${GHCR_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
 
     - name: Set up Docker Buildx
       id: buildx
@@ -113,7 +114,7 @@ jobs:
       env:
           MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
       with:
-          image: ${{ steps.prep.outputs.tags }}
+          image: ${{ steps.prep.outputs.ghcr_tag }}
           score-threshold: ${{ inputs.score }}
 
     - name: Login to Quay
