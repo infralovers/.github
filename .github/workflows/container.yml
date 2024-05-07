@@ -115,7 +115,6 @@ jobs:
       with:
           image: ${{ steps.prep.outputs.tags }}
           score-threshold: ${{ inputs.score }}
-          log-level: debug
 
     - name: Login to Quay
       if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
