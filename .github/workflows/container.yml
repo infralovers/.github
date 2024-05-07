@@ -39,7 +39,7 @@ jobs:
         fi
         if [ -z "${{ env.score }}" ]; then
           echo "score=60" >> $GITHUB_ENV
-        fi]
+        fi
 
     - name: Prepare tagging
       id: prep
