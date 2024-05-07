@@ -90,7 +90,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
-    - name: Build
+    - name: Build Container Image
       id: docker_build
       uses: docker/build-push-action@v5
       with:
@@ -124,7 +124,8 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ env.BOT_ACCESS_TOKEN }}
 
-    - name: Build
+    - name: Publish container
+      if: needs.pre-commit.outputs.version != ''
       uses: docker/build-push-action@v5
       with:
           builder: ${{ steps.buildx.outputs.name }}
