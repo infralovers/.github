@@ -37,6 +37,9 @@ jobs:
         if [ -z "${{ env.platforms }}" ]; then
           echo "platforms=linux/amd64" >> $GITHUB_ENV
         fi
+        if [ -z "${{ env.score }}" ]; then
+          echo "score=60" >> $GITHUB_ENV
+        fi]
 
     - name: Prepare tagging
       id: prep
@@ -107,6 +110,7 @@ jobs:
           MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
       with:
           image: ${{ steps.prep.outputs.tags }}
+          score-threshold: ${{ env.score }}
 
     - name: Login to Quay
       if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
