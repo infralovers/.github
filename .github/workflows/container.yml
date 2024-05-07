@@ -34,11 +34,11 @@ jobs:
       id: get_dir
       run: |
         echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
-        if [ -z "${{ env.platforms }}" ]; then
-          echo "platforms=linux/amd64" >> $GITHUB_ENV
+        if [ -z "${{ env.PLATFORMS }}" ]; then
+          echo "PLATFORMS=linux/amd64" >> $GITHUB_ENV
         fi
-        if [ -z "${{ env.score }}" ]; then
-          echo "score=60" >> $GITHUB_ENV
+        if [ -z "${{ env.SCORE }}" ]; then
+          echo "SCORE=60" >> $GITHUB_ENV
         fi
 
     - name: Prepare tagging
@@ -83,15 +83,7 @@ jobs:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
-        platforms: ${{ env.platforms }}
-
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
+        platforms: ${{ env.PLATFORMS }}
 
     - name: Build Container Image
       id: docker_build
@@ -102,7 +94,7 @@ jobs:
           file: ${{ inputs.dockerfile }}
           load: true
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ env.platforms }}
+          platforms: ${{ env.PLATFORMS }}
 
     - name: Scan Docker Image
       uses: mondoohq/actions/docker-image@v11.0.0
@@ -110,7 +102,7 @@ jobs:
           MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
       with:
           image: ${{ steps.prep.outputs.tags }}
-          score-threshold: ${{ env.score }}
+          score-threshold: ${{ env.SCORE }}
 
     - name: Login to Quay
       if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
@@ -137,4 +129,4 @@ jobs:
           file: ${{ inputs.dockerfile }}
           push: ${{ github.event_name != 'pull_request' && needs.prebuild.outputs.version != '' }}
           tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ env.platforms }}
+          platforms: ${{ env.PLATFORMS }}
