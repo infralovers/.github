@@ -107,7 +107,7 @@ jobs:
       with:
           context: ${{ steps.get_dir.outputs.docker_directory }}
           file: ${{ inputs.dockerfile }}
-          load: true
+          # load: true
           tags: ${{ steps.prep.outputs.tags }}
           platforms: ${{ inputs.platforms }}
 
