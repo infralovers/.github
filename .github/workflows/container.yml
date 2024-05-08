@@ -4,6 +4,19 @@ name: Container Workflow template"
 
 on:
   workflow_call:
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: 'The GitHub token for the bot account'
+        required: true
+      QUAY_USER:
+        description: 'The username for the Quay account'
+        required: false
+      QUAY_TOKEN:
+        description: 'The token for the Quay account'
+        required: false
+      MONDOO_SERVICE_ACCOUNT:
+        description: 'The service account for the Mondo service'
+        required: false
     inputs:
       release:
         description: 'also run release workflow'
