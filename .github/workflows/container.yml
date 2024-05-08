@@ -5,6 +5,11 @@ name: Container Workflow template"
 on:
   workflow_call:
     inputs:
+      env:
+        description: 'The environment variables to pass to the workflow'
+        required: false
+        type: string
+        default: ""
       release:
         description: 'also run release workflow'
         required: false
@@ -38,14 +43,19 @@ on:
 
 jobs:
 
-  foo:
+  prep:
     runs-on: ubuntu-latest
     steps:
-    - name: bla
+    - name: envs
       run: |
-        env
-        echo "settings ${QUAY_USER} ${QUAY_TOKEN} ${BOT_ACCESS_TOKEN}" > tmp
-        cat tmp
+        cat >> envs <<EOF
+        ${{ inputs.env }}
+        EOF
+        for i in $(cat envs | jq -r 'keys | .[]'); do
+          sel=".$i"
+          value=$(cat envs | jq "$sel")
+          echo "$i=$value" >> $GITHUB_ENV
+        done
 
 
   pre-commit:
@@ -69,6 +79,7 @@ jobs:
       id: get_dir
       run: |
         echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
+        env
 
     - name: Prepare tagging
       id: prep
