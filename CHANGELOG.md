@@ -1,3 +1,11 @@
+## 1.4.15 (2024-05-08)
+
+#### Bug Fixes
+
+* build args on both actions (1327dc94)
+* Adding buildargs on container input (76c729a8)
+
+
 ## 1.4.14 (2024-05-08)
 
 #### Bug Fixes
