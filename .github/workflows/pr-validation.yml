@@ -9,6 +9,10 @@ on:
   #     - synchronize
 
   workflow_call:
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: 'The GitHub token for the bot account'
+        required: true
 
 permissions:
   pull-requests: write
