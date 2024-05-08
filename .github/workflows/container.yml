@@ -93,6 +93,7 @@ jobs:
         echo "settings tag ${TAGS}"
         echo "tags=${TAGS}" >> $GITHUB_OUTPUT
         echo "ghcr_tag=${GHCR_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+        echo "quay_user=${{ secrets.QUAY_USER }}" >> $GITHUB_OUTPUT
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -105,11 +106,10 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v5
       with:
-          context: ${{ steps.get_dir.outputs.docker_directory }}
-          file: ${{ inputs.dockerfile }}
-          # load: true
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ inputs.platforms }}
+        load: true
+        context: ${{ steps.get_dir.outputs.docker_directory }}
+        file: ${{ inputs.dockerfile }}
+        tags: ${{ steps.prep.outputs.tags }}
 
     - name: Scan Docker Image
       uses: mondoohq/actions/docker-image@v11.0.0
@@ -120,7 +120,7 @@ jobs:
           score-threshold: ${{ inputs.score }}
 
     - name: Login to Quay
-      if: needs.pre-commit.outputs.version != '' && vars.QUAY_USER != ''
+      if: needs.pre-commit.outputs.version != '' && steps.prep.outputs.quay_user != ''
       uses: docker/login-action@v3
       with:
          registry: quay.io
