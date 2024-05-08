@@ -1,3 +1,11 @@
+## 1.4.14 (2024-05-08)
+
+#### Bug Fixes
+
+* Define required secrets for workflow dispatches (c58dd695)
+* using vault data (5559560f)
+
+
 ## 1.4.13 (2024-05-07)
 
 #### Bug Fixes
