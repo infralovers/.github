@@ -94,20 +94,17 @@ jobs:
         echo "tags=${TAGS}" >> $GITHUB_OUTPUT
         echo "ghcr_tag=${GHCR_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
 
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v3
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
-      with:
-        platforms: ${{ inputs.platforms }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
 
     - name: Build Container Image
       id: docker_build
       uses: docker/build-push-action@v5
       with:
-          builder: ${{ steps.buildx.outputs.name }}
           context: ${{ steps.get_dir.outputs.docker_directory }}
           file: ${{ inputs.dockerfile }}
           load: true
@@ -142,7 +139,6 @@ jobs:
       if: needs.pre-commit.outputs.version != ''
       uses: docker/build-push-action@v5
       with:
-          builder: ${{ steps.buildx.outputs.name }}
           context: ${{ steps.get_dir.outputs.docker_directory }}
           file: ${{ inputs.dockerfile }}
           push: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
