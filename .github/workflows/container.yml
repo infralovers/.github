@@ -48,6 +48,11 @@ on:
         required: false
         type: string
         default: ${{ github.repository_owner }}
+      build_args:
+        description: 'The build arguments for the image'
+        required: false
+        type: string
+        default: ''
 
 jobs:
 
@@ -158,6 +163,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
           tags: ${{ steps.prep.outputs.tags }}
           platforms: ${{ inputs.platforms }}
+          build-args: ${{ inputs.build_args }}
 
   release:
     needs: [ pre-commit, build ]
