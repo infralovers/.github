@@ -12,6 +12,11 @@ on:
       - assigned
 
 
+permissions:
+  pull-requests: write
+  statuses: write
+
+
 jobs:
   pr-validation:
     uses: ./.github/workflows/pr-validation.yml
