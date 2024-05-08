@@ -129,6 +129,7 @@ jobs:
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
         tags: ${{ steps.prep.outputs.tags }}
+        build-args: ${{ inputs.build_args }}
 
     - name: Scan Docker Image
       uses: mondoohq/actions/docker-image@v11.0.0
