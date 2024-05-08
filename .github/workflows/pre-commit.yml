@@ -3,10 +3,11 @@
 name: Pre-Commit validation
 
 on:
-  # pull_request:
-  #   branches:
-  #     - main
   workflow_call:
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: 'The GitHub token for the bot account'
+        required: true
     outputs:
       version:
         description: 'The version of the release'

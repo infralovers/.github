@@ -15,4 +15,5 @@ on:
 jobs:
   pr-validation:
     uses: ./.github/workflows/pr-validation.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: "${{ fromJSON(secrets.VAULT_KV_1D187965_OP_GITHUB_INFRALOVERS).PAT }}"

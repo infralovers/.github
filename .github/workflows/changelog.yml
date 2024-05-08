@@ -10,4 +10,5 @@ on:
 jobs:
   changelog-automation:
     uses: ./.github/workflows/changelog-automation.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}

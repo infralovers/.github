@@ -2,12 +2,11 @@
 name: "Infralovers Changelog Automation template"
 
 on:
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
-
   workflow_call:
+    secrets:
+      BOT_ACCESS_TOKEN:
+        description: 'The GitHub token for the bot account'
+        required: true
 
 
 jobs:
