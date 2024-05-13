@@ -1,0 +1,50 @@
+---
+
+name: 'Terraform Analyse'
+description: 'analyse terraform code'
+inputs:
+  tfdir:
+    description: 'Directory to scan'
+    required: true
+    default: '.'
+  mondoo_service_account:
+    description: 'Mondoo service account bas64 encoded'
+    required: true
+    default: ''
+outputs: {}
+runs:
+  using: "composite"
+  steps:
+    - name: mondoo terraform hcl scan
+      uses: mondoohq/actions/terraform-hcl@v11.0.0
+      if: always()
+      env:
+          MONDOO_CONFIG_BASE64: ${{ inputs.mondoo_service_account }}
+      with:
+        path: ${{ inputs.tfdir }}
+        output: 'summary'
+
+    - name: kics scan
+      uses: checkmarx/kics-github-action@v2
+      if: always()
+      with:
+        path: ${{ inputs.tfdir }}
+        output_formats: "json"
+
+    - name: trivy scan
+      uses: aquasecurity/trivy-action@master
+      if: always()
+      with:
+        scan-type: 'fs'
+        scan-ref: ${{ inputs.tfdir }}
+        scanners: 'vuln,misconfig'
+        format: 'table'
+
+    - name: checkov scan
+      uses: bridgecrewio/checkov-action@v12
+      if: always()
+      with:
+        directory: ${{ inputs.tfdir }}
+        output_format: cli,sarif
+        quiet: false
+        skip_path: 'policies' # incorrect hcl handling in checkov
