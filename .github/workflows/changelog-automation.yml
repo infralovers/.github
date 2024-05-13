@@ -8,14 +8,15 @@ on:
         description: 'The GitHub token for the bot account'
         required: true
 
-
 jobs:
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: secrets.BOT_ACCESS_TOKEN
 
   release:
     needs: [ prebuild ]
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: secrets.BOT_ACCESS_TOKEN
