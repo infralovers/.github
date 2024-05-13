@@ -1,3 +1,13 @@
+## 1.4.16 (2024-05-13)
+
+#### Bug Fixes
+
+* Reset to inheritance (6442a687)
+* update changelog ref (536488fa)
+* refs to secrets are passed not inherited (18647121)
+* vault secrets (8bc2a016)
+
+
 ## 1.4.15 (2024-05-08)
 
 #### Bug Fixes
