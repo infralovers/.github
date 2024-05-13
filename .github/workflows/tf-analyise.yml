@@ -1,0 +1,36 @@
+---
+name: Analyze Terraform
+
+on:
+    workflow_call:
+      inputs:
+          tfdir:
+              description: 'Terraform directory to analyze'
+              required: true
+              default: '.'
+              type: string
+      secrets:
+         MONDOO_SERVICE_ACCOUNT:
+            description: 'Mondoo Service Account'
+            required: true
+jobs:
+
+    analyze_tf:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Check if ${{ inputs.tfdir }} changed
+              id: detect
+              uses: tj-actions/changed-files@v44
+              with:
+                path: ${{ inputs.tfdir }}
+
+            - name: run terraform anlysis
+              if: ( steps.detect.outputs.all_changed_files != '' && always() ) || ( github.event_name == 'workflow_dispatch' && always() )
+              uses: ./.github/workflows/terraform-analyse
+              with:
+                tfdir: ${{ inputs.tfdir }}
+                mondoo_service_account: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}

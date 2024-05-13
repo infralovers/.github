@@ -1,0 +1,32 @@
+---
+name: Analyze Terraform
+
+on:
+    workflow_call:
+        inputs:
+            tfdir:
+                description: 'Terraform directory to analyze'
+                required: true
+                default: '.'
+                type: string
+
+jobs:
+
+    terratest:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Check if ${{ inputs.tfdir }} changed
+          id: detect
+          uses: tj-actions/changed-files@v44
+          with:
+            path: ${{ inputs.tfdir }}
+
+        - name: Run Terratest
+          uses: cloudposse/github-action-terratest@main
+          if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
+          with:
+            sourceDir: ${{ inputs.tfdir }}
