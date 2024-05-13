@@ -11,12 +11,10 @@ on:
 jobs:
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
-    secrets:
-      BOT_ACCESS_TOKEN: secrets.BOT_ACCESS_TOKEN
+    secrets: inherit
 
   release:
     needs: [ prebuild ]
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
-    secrets:
-      BOT_ACCESS_TOKEN: secrets.BOT_ACCESS_TOKEN
+    secrets: inherit
