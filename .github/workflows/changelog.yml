@@ -9,6 +9,6 @@ on:
 
 jobs:
   changelog-automation:
-    uses: ./.github/workflows/changelog-automation.yml
+    uses: infralovers/.github/.github/workflows/changelog-automation.yml@main
     secrets:
       BOT_ACCESS_TOKEN: "${{ fromJSON(secrets.VAULT_KV_1D187965_OP_GITHUB_INFRALOVERS).PAT }}"
