@@ -14,7 +14,6 @@ on:
             description: 'Mondoo Service Account'
             required: true
 jobs:
-
     analyze_tf:
         runs-on: ubuntu-latest
 
@@ -30,7 +29,7 @@ jobs:
 
             - name: run terraform anlysis
               if: ( steps.detect.outputs.all_changed_files != '' && always() ) || ( github.event_name == 'workflow_dispatch' && always() )
-              uses: infralovers/.github/.github/workflows/terraform-analyse@main
+              uses: infralovers/terraform-analyse-action@main
               with:
                 tfdir: ${{ inputs.tfdir }}
                 mondoo_service_account: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
