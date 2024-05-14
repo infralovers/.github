@@ -1,3 +1,15 @@
+## 1.4.17 (2024-05-14)
+
+#### Bug Fixes
+
+* Seperate action (3b39cb53)
+* Workflow action def (f3fb366b)
+
+#### Code Refactoring
+
+* Change ref from gh action to .github (3a86978a)
+
+
 ## 1.4.16 (2024-05-13)
 
 #### Bug Fixes
