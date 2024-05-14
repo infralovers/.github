@@ -30,7 +30,7 @@ jobs:
 
             - name: run terraform anlysis
               if: ( steps.detect.outputs.all_changed_files != '' && always() ) || ( github.event_name == 'workflow_dispatch' && always() )
-              uses: ./.github/workflows/terraform-analyse
+              uses: infralovers/.github/.github/workflows/terraform-analyse@main
               with:
                 tfdir: ${{ inputs.tfdir }}
                 mondoo_service_account: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
