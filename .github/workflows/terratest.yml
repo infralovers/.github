@@ -9,6 +9,15 @@ on:
                 required: true
                 default: '.'
                 type: string
+            test_timeout:
+                description: 'Test timeout'
+                required: true
+                default: '30m'
+                type: string
+        secrets:
+            TFE_TOKEN:
+                description: 'Terraform Cloud API Token'
+                required: true
 
 jobs:
 
@@ -25,8 +34,35 @@ jobs:
           with:
             path: ${{ inputs.tfdir }}
 
-        - name: Run Terratest
-          uses: cloudposse/github-action-terratest@main
+
+        - uses: actions/setup-go@v5
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
           with:
-            sourceDir: ${{ inputs.tfdir }}
+            go-version-file: ${{ inputs.sourceDir }}/go.mod
+            cache: true
+            cache-dependency-path: ${{ inputs.sourceDir }}/go.mod
+
+        - name: Run Tests
+          if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
+          shell: bash
+          working-directory: ${{ inputs.sourceDir }}
+          env:
+            TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+          run: |
+            go install github.com/jstemmer/go-junit-report@latest
+            go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
+
+        - name: Post Test Summary
+          uses: test-summary/action@v2
+          with:
+            paths: |
+              ${{ inputs.sourceDir }}/report.xml
+          if: always()
+
+        # - name: Run Terratest
+        #   uses: cloudposse/github-action-terratest@main
+        #   if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
+        #   with:
+        #     sourceDir: ${{ inputs.tfdir }}
+        #   env:
+        #     TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
