@@ -24,6 +24,11 @@ on:
                 required: false
                 default: 'eu-central-1'
                 type: string
+            aws_role:
+                description: 'AWS role'
+                required: false
+                default: 'training'
+                type: string
 
 permissions:
   contents: read
@@ -58,7 +63,7 @@ jobs:
                 kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
                 kv/data/op/terraform_il_machine Token | TFE_TOKEN;
-                aws-dev-${{ inputs.aws_region }}/creds/ec2 * | AWS_;
+                aws-dev-${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
 
         - name: Setup HCP Terraform authentication
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
