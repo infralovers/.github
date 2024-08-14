@@ -19,6 +19,11 @@ on:
                 required: false
                 default: '1.9.0'
                 type: string
+            aws_region:
+                description: 'AWS region'
+                required: false
+                default: 'eu-central-1'
+                type: string
 
 permissions:
   contents: read
@@ -53,7 +58,7 @@ jobs:
                 kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
                 kv/data/op/terraform_il_machine Token | TFE_TOKEN;
-                aws-dev-eu-central-1/creds/ec2 * | AWS_;
+                aws-dev-${{ inputs.aws_region }}/creds/ec2 * | AWS_;
 
         - name: Setup HCP Terraform authentication
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
@@ -74,6 +79,7 @@ jobs:
           shell: bash
           working-directory: ${{ inputs.sourceDir }}
           env:
+            AWS_REGION: ${{ inputs.aws_region }}
             AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY }}
             AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_KEY }}
             HCP_CLIENT_ID: ${{ steps.import-secrets.outputs.HCP_CLIENT_ID }}
