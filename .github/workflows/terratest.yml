@@ -4,7 +4,7 @@ name: Analyze Terraform
 on:
     workflow_call:
         inputs:
-            tfdir:
+            sourceDir:
                 description: 'Terraform directory to analyze'
                 required: true
                 default: '.'
@@ -28,11 +28,11 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v4
 
-        - name: Check if ${{ inputs.tfdir }} changed
+        - name: Check if ${{ inputs.sourceDir }} changed
           id: detect
           uses: tj-actions/changed-files@v44
           with:
-            path: ${{ inputs.tfdir }}
+            path: ${{ inputs.sourceDir }}
 
 
         - uses: actions/setup-go@v5
