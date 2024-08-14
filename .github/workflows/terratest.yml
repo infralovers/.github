@@ -1,34 +1,15 @@
 ---
-name: Analyze Terraform
+name: Terraform Testing
 
 on:
     workflow_call:
         inputs:
             sourceDir:
                 description: 'Terraform directory to analyze'
-                required: true
+                required: false
                 default: '.'
                 type: string
-            test_timeout:
-                description: 'Test timeout'
-                required: false
-                default: '30m'
-                type: string
-            terraform_version:
-                description: 'Terraform version'
-                required: false
-                default: '1.9.0'
-                type: string
-            aws_region:
-                description: 'AWS region'
-                required: false
-                default: 'eu-central-1'
-                type: string
-            aws_role:
-                description: 'AWS role'
-                required: false
-                default: 'training'
-                type: string
+
 
 permissions:
   contents: read
@@ -36,75 +17,27 @@ permissions:
 
 jobs:
 
-    terratest:
+    find_tf:
         runs-on: ubuntu-latest
-
+        outputs:
+            tfdir: ${{ steps.find_tf.outputs.tfdir }}
         steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-        - name: Check if ${{ inputs.sourceDir }} changed
-          id: detect
-          uses: tj-actions/changed-files@v44
-          with:
-            path: ${{ inputs.sourceDir }}
+            - name: Find Terraform files
+              working-directory: ${{ github.event.inputs.sourceDir }}
+              id: find_tf
+              run: |
+                dirs=$(find . -type f -name "go.mod" -exec dirname {} \; | sort | uniq | grep -v examples)
+                TFDIR=$( echo "${dirs}" | jq -R -s -c 'split("\n")' | jq 'del(.[] | select(. == ""))' -rc )
+                echo "tfdir=${TFDIR}" >> $GITHUB_OUTPUT
 
-        - name: Import Secrets
-          id: import-secrets
-          uses: hashicorp/vault-action@v2
-          with:
-            url: https://vault-eu-central-1-public-vault-d0c4b76c.55bfc018.z1.hashicorp.cloud:8200
-            namespace: admin
-            method: jwt
-            path: jwt_github
-            role: tf_mod
-#            jwtGithubAudience: sigstore
-            secrets: |
-                kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
-                kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
-                kv/data/op/terraform_il_machine Token | TFE_TOKEN;
-                aws-dev-${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
-
-        - name: Setup HCP Terraform authentication
-          if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
-          uses: hashicorp/setup-terraform@v3
-          with:
-            terraform_version: ${{ inputs.terraform_version }}
-            cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
-
-        - uses: actions/setup-go@v5
-          if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
-          with:
-            go-version-file: ${{ inputs.sourceDir }}/go.mod
-            cache: true
-            cache-dependency-path: ${{ inputs.sourceDir }}/go.mod
-
-        - name: Run Tests
-          if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
-          shell: bash
-          working-directory: ${{ inputs.sourceDir }}
-          env:
-            AWS_REGION: ${{ inputs.aws_region }}
-            AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY }}
-            AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_KEY }}
-            HCP_CLIENT_ID: ${{ steps.import-secrets.outputs.HCP_CLIENT_ID }}
-            HCP_CLIENT_SECRET: ${{ steps.import-secrets.outputs.HCP_CLIENT_SECRET }}
-          run: |
-            env
-            go install github.com/jstemmer/go-junit-report@latest
-            go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
-
-        - name: Post Test Summary
-          uses: test-summary/action@v2
-          with:
-            paths: |
-              ${{ inputs.sourceDir }}/report.xml
-          if: always()
-
-        # - name: Run Terratest
-        #   uses: cloudposse/github-action-terratest@main
-        #   if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
-        #   with:
-        #     sourceDir: ${{ inputs.tfdir }}
-        #   env:
-        #     TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+    terratest:
+        needs: [find_tf]
+        strategy:
+            matrix:
+                tfdir: ${{ fromJson(needs.find_tf.outputs.tfdir) }}
+        uses: infralovers/.github/.github/workflows/terratest.yml@main
+        with:
+            sourceDir: ${{ matrix.tfdir }}
