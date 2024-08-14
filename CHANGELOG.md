@@ -1,3 +1,15 @@
+## 1.4.18 (2024-08-14)
+
+#### Bug Fixes
+
+* hcp auth (02d78a8b)
+* testing (bdbe40fd)
+* testing (62457c80)
+* test timeout as optional (d5b62a95)
+* test timeout as optional (f079579b)
+* custom terraform test flow (dc976a85)
+
+
 ## 1.4.17 (2024-05-14)
 
 #### Bug Fixes
