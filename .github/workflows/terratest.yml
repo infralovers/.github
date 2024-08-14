@@ -19,10 +19,6 @@ on:
                 required: false
                 default: '1.9.0'
                 type: string
-        secrets:
-            TFE_TOKEN:
-                description: 'Terraform Cloud API Token'
-                required: true
 
 jobs:
 
@@ -39,12 +35,27 @@ jobs:
           with:
             path: ${{ inputs.sourceDir }}
 
+        - name: Import Secrets
+          id: import-secrets
+          uses: hashicorp/vault-action@v2
+          with:
+            url: https://vault-eu-central-1-public-vault-d0c4b76c.55bfc018.z1.hashicorp.cloud:8200
+            method: jwt
+            path: jwt_github
+            role: tf_mod
+            jwtGithubAudience: sigstore
+            secrets: |
+                kv/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
+                kv/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
+                kv/op/terraform_il_machine token | TFE_TOKEN;
+                aws-dev-eu-central-1/creds/ec2 * | AWS_DATA;
+
         - name: Setup HCP Terraform authentication
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
           uses: hashicorp/setup-terraform@v3
           with:
             terraform_version: ${{ inputs.terraform_version }}
-            cli_config_credentials_token: ${{ secrets.TFE_TOKEN }}
+            cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
 
         - uses: actions/setup-go@v5
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
@@ -58,7 +69,10 @@ jobs:
           shell: bash
           working-directory: ${{ inputs.sourceDir }}
           env:
-            TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+            AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_DATA.access_key }}
+            AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_DATA.secret_key }}
+            HCP_CLIENT_ID: ${{ steps.import-secrets.outputs.HCP_CLIENT_ID }}
+            HCP_CLIENT_SECRET: ${{ steps.import-secrets.outputs.HCP_CLIENT_SECRET }}
           run: |
            go install github.com/jstemmer/go-junit-report@latest
            go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
