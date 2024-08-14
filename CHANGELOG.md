@@ -1,3 +1,10 @@
+## 1.4.19 (2024-08-14)
+
+#### Bug Fixes
+
+* reorganize terratest flows (63a09170)
+
+
 ## 1.4.18 (2024-08-14)
 
 #### Bug Fixes
