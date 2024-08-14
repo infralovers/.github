@@ -44,6 +44,7 @@ jobs:
           uses: hashicorp/vault-action@v2
           with:
             url: https://vault-eu-central-1-public-vault-d0c4b76c.55bfc018.z1.hashicorp.cloud:8200
+            namespace: admin
             method: jwt
             path: jwt_github
             role: tf_mod
