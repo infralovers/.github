@@ -58,7 +58,6 @@ jobs:
             method: jwt
             path: jwt_github
             role: tf_mod
-#            jwtGithubAudience: sigstore
             secrets: |
                 kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
@@ -90,7 +89,6 @@ jobs:
             HCP_CLIENT_ID: ${{ steps.import-secrets.outputs.HCP_CLIENT_ID }}
             HCP_CLIENT_SECRET: ${{ steps.import-secrets.outputs.HCP_CLIENT_SECRET }}
           run: |
-            env
             go install github.com/jstemmer/go-junit-report@latest
             go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
 
@@ -100,11 +98,3 @@ jobs:
             paths: |
               ${{ inputs.sourceDir }}/report.xml
           if: always()
-
-        # - name: Run Terratest
-        #   uses: cloudposse/github-action-terratest@main
-        #   if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
-        #   with:
-        #     sourceDir: ${{ inputs.tfdir }}
-        #   env:
-        #     TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
