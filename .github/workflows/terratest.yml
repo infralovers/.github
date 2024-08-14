@@ -11,7 +11,7 @@ on:
                 type: string
             test_timeout:
                 description: 'Test timeout'
-                required: true
+                required: false
                 default: '30m'
                 type: string
         secrets:
