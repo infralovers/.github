@@ -47,7 +47,7 @@ jobs:
             method: jwt
             path: jwt_github
             role: tf_mod
-            jwtGithubAudience: sigstore
+#            jwtGithubAudience: sigstore
             secrets: |
                 kv/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
