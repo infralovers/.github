@@ -52,7 +52,7 @@ jobs:
             secrets: |
                 kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
-                kv/data/op/terraform_il_machine token | TFE_TOKEN;
+                kv/data/op/terraform_il_machine Token | TFE_TOKEN;
                 aws-dev-eu-central-1/creds/ec2 * | AWS_DATA;
 
         - name: Setup HCP Terraform authentication
