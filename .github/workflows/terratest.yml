@@ -53,7 +53,7 @@ jobs:
                 kv/data/op/hcp_packer_service_principal username | HCP_CLIENT_ID;
                 kv/data/op/hcp_packer_service_principal password | HCP_CLIENT_SECRET;
                 kv/data/op/terraform_il_machine Token | TFE_TOKEN;
-                aws-dev-eu-central-1/creds/ec2 * | AWS_DATA;
+                aws-dev-eu-central-1/creds/ec2 * | AWS_;
 
         - name: Setup HCP Terraform authentication
           if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
@@ -74,13 +74,14 @@ jobs:
           shell: bash
           working-directory: ${{ inputs.sourceDir }}
           env:
-            AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_DATA.access_key }}
-            AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_DATA.secret_key }}
+            AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY }}
+            AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_KEY }}
             HCP_CLIENT_ID: ${{ steps.import-secrets.outputs.HCP_CLIENT_ID }}
             HCP_CLIENT_SECRET: ${{ steps.import-secrets.outputs.HCP_CLIENT_SECRET }}
           run: |
-           go install github.com/jstemmer/go-junit-report@latest
-           go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
+            env
+            go install github.com/jstemmer/go-junit-report@latest
+            go test -timeout ${{ inputs.test_timeout }} -v ./... | go-junit-report -set-exit-code > report.xml
 
         - name: Post Test Summary
           uses: test-summary/action@v2
