@@ -93,16 +93,6 @@ jobs:
         fi
         IMAGE_NAME="${repo}/${name}"
 
-        IMAGES=$(cat << EOI
-        EOI
-        )
-
-        TAGS=$(cat <<EOI
-
-        EOI
-        )
-
-
         echo 'tags<<EOF' >> $GITHUB_OUTPUT
         echo "type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}" >> $GITHUB_OUTPUT
         echo "type=schedule,pattern=nightly" >> $GITHUB_OUTPUT
