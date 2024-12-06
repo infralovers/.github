@@ -85,7 +85,7 @@ jobs:
       run: |
         name="$(basename ${{ github.repository }})"
         if [[ -n "${{ inputs.image_name }}" ]]; then
-          tmp_name="$( basename '${{ inputs.image_name }}')"
+          name="$( basename '${{ inputs.image_name }}')"
         fi
         repo=${{ github.repository_owner }}
         if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
