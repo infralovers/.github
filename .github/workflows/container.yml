@@ -54,6 +54,9 @@ on:
         type: string
         default: ''
 
+env:
+  MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
+
 jobs:
 
   pre-commit:
@@ -120,7 +123,6 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-
     - name: Build Container Image
       id: docker_build
       uses: docker/build-push-action@v5
@@ -132,9 +134,8 @@ jobs:
         build-args: ${{ inputs.build_args }}
 
     - name: Scan Docker Image
+      if: env.MONDOO_CONFIG_BASE64 != ''
       uses: mondoohq/actions/docker-image@v11.0.0
-      env:
-          MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
       with:
           image: ${{ steps.prep.outputs.ghcr_tag }}
           score-threshold: ${{ inputs.score }}
