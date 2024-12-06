@@ -1,3 +1,10 @@
+## 1.4.21 (2024-12-06)
+
+#### Bug Fixes
+
+* rename ghcr container image name based on image_name var (8ea25356)
+
+
 ## 1.4.20 (2024-12-06)
 
 #### Bug Fixes
