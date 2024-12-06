@@ -91,7 +91,7 @@ jobs:
         if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
           repo="$( dirname '${{ inputs.image_name }}')"
         fi
-        IMAGE_NAME="${repo}/${name}
+        IMAGE_NAME="${repo}/${name}"
 
         IMAGES=<<EOT
         name=ghcr.io/${IMAGE_NAME},enable=true
