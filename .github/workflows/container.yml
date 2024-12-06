@@ -93,17 +93,19 @@ jobs:
         fi
         IMAGE_NAME="${repo}/${name}"
 
-        IMAGES=$(cat << EOT
+        IMAGES=$(cat << EOI
         name=ghcr.io/${IMAGE_NAME},enable=true
         name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )
         name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )
-        EOT)
+        EOI
+        )
 
-        TAGS=$(cat <<EOT
+        TAGS=$(cat <<EOI
         type=semver,pattern={{version}},value=
         type=schedule,pattern=nightly
         type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr
-        EOT)
+        EOI
+        )
 
         echo "setting images ${IMAGES}"
         echo "settings tag ${TAGS}"
