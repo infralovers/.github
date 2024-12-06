@@ -121,7 +121,7 @@ jobs:
 
     - name: foo
       run : |
-        echo "${{ steps.prep.outputs.json }}"
+        echo "${{ steps.meta.outputs.json }}"
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -138,6 +138,7 @@ jobs:
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
         tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         build-args: ${{ inputs.build_args }}
 
     - name: Scan Docker Image
