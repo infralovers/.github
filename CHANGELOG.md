@@ -1,3 +1,18 @@
+## 1.4.22 (2024-12-06)
+
+#### Bug Fixes
+
+* mondoo tag scan (aaf90332)
+* multiline output/input (15a393de)
+* multiline output/input (69412428)
+* multiline output/input (375efd03)
+* tags (90c8d3e0)
+* tags (a8808703)
+* tags (08e0d589)
+* eoi of subcommands (7703493b)
+* refactor image creation name processing (4f75e235)
+
+
 ## 1.4.21 (2024-12-06)
 
 #### Bug Fixes
