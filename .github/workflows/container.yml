@@ -107,10 +107,14 @@ jobs:
         EOI
         )
 
-        echo "setting images ${IMAGES}"
-        echo "settings tag ${TAGS}"
-        echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-        echo "images=${IMAGES}" >> $GITHUB_OUTPUT
+
+        echo 'tags<<EOF' >> $GITHUB_OUTPUT
+        echo ${TAGS} >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+        echo 'images<<EOF' >> $GITHUB_OUTPUT
+        echo ${IMAGES} >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
@@ -119,9 +123,6 @@ jobs:
         images: ${{ steps.prep.outputs.images }}
         tags: ${{ steps.prep.outputs.tags }}
 
-    - name: foo
-      run : |
-        echo "${{ steps.meta.outputs.json }}"
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
