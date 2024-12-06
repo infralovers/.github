@@ -165,7 +165,7 @@ jobs:
       if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
       run: |
         set -ex
-        for img in $( jq -r '.tags[]' <<< "${{ steps.meta.outputs.json }}" ); do
+        for img in $( jq -r '.tags[]' <<< '${{ steps.meta.outputs.json }}' ); do
           docker push $img
         done
 
