@@ -101,7 +101,7 @@ jobs:
         )
 
         TAGS=$(cat <<EOI
-        type=semver,pattern={{version}},value=
+        type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}
         type=schedule,pattern=nightly
         type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr
         EOI
@@ -112,14 +112,12 @@ jobs:
         echo "tags=${TAGS}" >> $GITHUB_OUTPUT
         echo "images=${IMAGES}" >> $GITHUB_OUTPUT
 
-    - name: Extract metadata (tags, labels) for Docker 👀
+    - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: |
-          ${{ steps.prep.outputs.images }}
-        tags: |
-          ${{ steps.prep.outputs.tags }}
+        images: ${{ steps.prep.outputs.images }}
+        tags: ${{ steps.prep.outputs.tags }}
 
     - name: foo
       run : |
