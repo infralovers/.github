@@ -1,3 +1,10 @@
+## 1.4.23 (2024-12-06)
+
+#### Bug Fixes
+
+* manual push (b5e4aaae)
+
+
 ## 1.4.22 (2024-12-06)
 
 #### Bug Fixes
