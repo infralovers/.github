@@ -1,3 +1,12 @@
+## 1.4.24 (2024-12-06)
+
+#### Bug Fixes
+
+* platform parameter (a6fae125)
+* string quote (b72bf184)
+* Debug publish images (80b1c560)
+
+
 ## 1.4.23 (2024-12-06)
 
 #### Bug Fixes
