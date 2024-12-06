@@ -112,7 +112,6 @@ jobs:
         images: ${{ steps.prep.outputs.images }}
         tags: ${{ steps.prep.outputs.tags }}
 
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -135,7 +134,7 @@ jobs:
       if: env.MONDOO_CONFIG_BASE64 != ''
       uses: mondoohq/actions/docker-image@v11.0.0
       with:
-          image: ${{ steps.meta.outputs.ghcr_tag }}
+          image: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
           score-threshold: ${{ inputs.score }}
 
     - name: Login to Dockerhub
