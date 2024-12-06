@@ -162,15 +162,11 @@ jobs:
         password: ${{ secrets.BOT_ACCESS_TOKEN }}
 
     - name: Publish container
-      if: needs.pre-commit.outputs.version != ''
-      uses: docker/build-push-action@v5
-      with:
-          context: ${{ steps.get_dir.outputs.docker_directory }}
-          file: ${{ inputs.dockerfile }}
-          push: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
-          tags: ${{ steps.prep.outputs.tags }}
-          platforms: ${{ inputs.platforms }}
-          build-args: ${{ inputs.build_args }}
+      if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
+      run: |
+        for img in $(echo "${{ fromJson(steps.meta.outputs.json).tags }}"" | jq -r '.tags[]' ); do
+          docker push $img
+        done
 
   release:
     needs: [ pre-commit, build ]
