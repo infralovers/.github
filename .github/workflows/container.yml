@@ -94,26 +94,25 @@ jobs:
         IMAGE_NAME="${repo}/${name}"
 
         IMAGES=$(cat << EOI
-        name=ghcr.io/${IMAGE_NAME},enable=true
-        name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )
-        name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )
         EOI
         )
 
         TAGS=$(cat <<EOI
-        type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}
-        type=schedule,pattern=nightly
-        type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr
+
         EOI
         )
 
 
         echo 'tags<<EOF' >> $GITHUB_OUTPUT
-        echo ${TAGS} >> $GITHUB_OUTPUT
+        echo "type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}" >> $GITHUB_OUTPUT
+        echo "type=schedule,pattern=nightly" >> $GITHUB_OUTPUT
+        echo "type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
         echo 'images<<EOF' >> $GITHUB_OUTPUT
-        echo ${IMAGES} >> $GITHUB_OUTPUT
+        echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
+        echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
     - name: Extract metadata (tags, labels) for Docker
