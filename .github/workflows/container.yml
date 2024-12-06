@@ -43,7 +43,6 @@ on:
         required: false
         type: string
         default: ''
-
       build_args:
         description: 'The build arguments for the image'
         required: false
@@ -129,6 +128,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: ${{ inputs.build_args }}
+        platforms: ${{ inputs.platforms }}
 
     - name: Scan Docker Image
       if: env.MONDOO_CONFIG_BASE64 != ''
