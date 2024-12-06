@@ -1,3 +1,10 @@
+## 1.4.20 (2024-12-06)
+
+#### Bug Fixes
+
+* no mondoo scan if token is not available (263cdc71)
+
+
 ## 1.4.19 (2024-08-14)
 
 #### Bug Fixes
