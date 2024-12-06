@@ -43,11 +43,7 @@ on:
         required: false
         type: string
         default: ''
-      image_repo:
-        description: 'The repository of the image'
-        required: false
-        type: string
-        default: ${{ github.repository_owner }}
+
       build_args:
         description: 'The build arguments for the image'
         required: false
@@ -56,6 +52,8 @@ on:
 
 env:
   MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
+  QUAY_USER: ${{ secrets.QUAY_USER }}
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
 
 jobs:
 
@@ -81,41 +79,38 @@ jobs:
       id: get_dir
       run: |
         echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
-        env
 
     - name: Prepare tagging
       id: prep
       run: |
-        IMAGE_NAME=$(basename ${{ github.repository }})
-        IMAGE_REPO=${{ inputs.image_repo }}
+        name="$(basename ${{ github.repository }})"
         if [[ -n "${{ inputs.image_name }}" ]]; then
-          IMAGE_NAME="${{ inputs.image_name }}"
+          name="$( basename '${{ inputs.image_name }}')"
         fi
-        VERSION="dev"
-        if [[ '${{ needs.pre-commit.outputs.version }}'  != '' ]]; then
-          VERSION="${{ needs.pre-commit.outputs.version }}"
+        repo=${{ github.repository_owner }}
+        if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
+          repo="$( dirname '${{ inputs.image_name }}')"
         fi
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          VERSION="nightly"
-        fi
-        GHCR_IMAGE="ghcr.io/${IMAGE_NAME}"
-        TAGS="${GHCR_IMAGE}:${VERSION}"
+        IMAGE_NAME="${repo}/${name}"
 
-        if [[ -n "${{ secrets.QUAY_USER }}" ]]; then
-          QUAY_IMAGE="quay.io/${IMAGE_REPO}/${IMAGE_NAME}"
-          tags="${TAGS}:${QUAY_IMAGE}:${VERSION}"
-        fi
+        echo 'tags<<EOF' >> $GITHUB_OUTPUT
+        echo "type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}" >> $GITHUB_OUTPUT
+        echo "type=schedule,pattern=nightly" >> $GITHUB_OUTPUT
+        echo "type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr" >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
 
-        if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-          TAGS="$TAGS,${GHCR_IMAGE}:latest"
-          if [[ -n "${{ secrets.QUAY_USER }}" ]]; then
-            TAGS="$TAGS,${QUAY_IMAGE}:latest"
-          fi
-        fi
-        echo "settings tag ${TAGS}"
-        echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-        echo "ghcr_tag=${GHCR_IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
-        echo "quay_user=${{ secrets.QUAY_USER }}" >> $GITHUB_OUTPUT
+        echo 'images<<EOF' >> $GITHUB_OUTPUT
+        echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
+        echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ steps.prep.outputs.images }}
+        tags: ${{ steps.prep.outputs.tags }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -128,20 +123,30 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         load: true
+        push: false
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
-        tags: ${{ steps.prep.outputs.tags }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         build-args: ${{ inputs.build_args }}
 
     - name: Scan Docker Image
       if: env.MONDOO_CONFIG_BASE64 != ''
       uses: mondoohq/actions/docker-image@v11.0.0
       with:
-          image: ${{ steps.prep.outputs.ghcr_tag }}
+          image: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
           score-threshold: ${{ inputs.score }}
 
+    - name: Login to Dockerhub
+      if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
+      uses: docker/login-action@v3
+      with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
     - name: Login to Quay
-      if: needs.pre-commit.outputs.version != '' && steps.prep.outputs.quay_user != ''
+      if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
       uses: docker/login-action@v3
       with:
          registry: quay.io
