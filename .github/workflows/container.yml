@@ -121,7 +121,6 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v5
       with:
-        load: true
         push: false
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
