@@ -1,3 +1,10 @@
+## 1.4.25 (2024-12-10)
+
+#### Bug Fixes
+
+* donot use load flag on container build (37f53f4f)
+
+
 ## 1.4.24 (2024-12-06)
 
 #### Bug Fixes
