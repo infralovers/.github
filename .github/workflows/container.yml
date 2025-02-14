@@ -104,6 +104,30 @@ jobs:
         echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
+    - name: Login to Dockerhub
+      if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
+      uses: docker/login-action@v3
+      with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+    - name: Login to Quay
+      if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
+      uses: docker/login-action@v3
+      with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+    - name: Login to GitHub Container Registry
+      if: needs.pre-commit.outputs.version != ''
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.BOT_ACCESS_TOKEN }}
+
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
@@ -119,54 +143,36 @@ jobs:
 
     - name: Build Container Image
       id: docker_build
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         push: false
+        load: true
+        context: ${{ steps.get_dir.outputs.docker_directory }}
+        file: ${{ inputs.dockerfile }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: ${{ inputs.build_args }}
+
+    - name: Scan Docker Image
+      if: env.MONDOO_CONFIG_BASE64 != '' && inputs.score > 0
+      uses: mondoohq/actions/docker-image@v11.0.0
+      with:
+          image: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
+          score-threshold: ${{ inputs.score }}
+
+    - name: Publish container
+      if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
+      id: docker_publish
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        load: false
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: ${{ inputs.build_args }}
         platforms: ${{ inputs.platforms }}
-
-    - name: Scan Docker Image
-      if: env.MONDOO_CONFIG_BASE64 != ''
-      uses: mondoohq/actions/docker-image@v11.0.0
-      with:
-          image: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
-          score-threshold: ${{ inputs.score }}
-
-    - name: Login to Dockerhub
-      if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
-      uses: docker/login-action@v3
-      with:
-          registry: docker.io
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-    - name: Login to Quay
-      if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
-      uses: docker/login-action@v3
-      with:
-         registry: quay.io
-         username: ${{ secrets.QUAY_USER }}
-         password: ${{ secrets.QUAY_TOKEN }}
-
-    - name: Login to GitHub Container Registry
-      if: needs.pre-commit.outputs.version != ''
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.BOT_ACCESS_TOKEN }}
-
-    - name: Publish container
-      if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
-      run: |
-        set -ex
-        for img in $( jq -r '.tags[]' <<< '${{ steps.meta.outputs.json }}' ); do
-          docker push $img
-        done
 
   release:
     needs: [ pre-commit, build ]
