@@ -1,3 +1,11 @@
+## 1.4.26 (2025-02-14)
+
+#### Bug Fixes
+
+* new build version (6cbcd6c7)
+* docker build and publish (18068c8e)
+
+
 ## 1.4.25 (2024-12-10)
 
 #### Bug Fixes
