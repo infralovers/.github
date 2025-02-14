@@ -166,7 +166,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
-        load: true
+        load: false
         context: ${{ steps.get_dir.outputs.docker_directory }}
         file: ${{ inputs.dockerfile }}
         tags: ${{ steps.meta.outputs.tags }}
