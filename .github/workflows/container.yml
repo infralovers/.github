@@ -104,13 +104,13 @@ jobs:
         echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
-        - name: Login to Dockerhub
-        if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
-        uses: docker/login-action@v3
-        with:
-            registry: docker.io
-            username: ${{ secrets.DOCKER_USER }}
-            password: ${{ secrets.DOCKER_TOKEN }}
+    - name: Login to Dockerhub
+      if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
+      uses: docker/login-action@v3
+      with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
     - name: Login to Quay
       if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
