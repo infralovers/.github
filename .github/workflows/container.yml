@@ -17,6 +17,12 @@ on:
       MONDOO_SERVICE_ACCOUNT:
         description: 'The service account for the Mondo service'
         required: false
+      DOCKER_USER:
+        description: 'The username for the docker hub account'
+        required: false
+      DOCKER_TOKEN:
+        description: 'The token for the docker user account'
+        required: false
     inputs:
       release:
         description: 'also run release workflow'
@@ -53,6 +59,7 @@ env:
   MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
   QUAY_USER: ${{ secrets.QUAY_USER }}
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
 jobs:
 
@@ -90,6 +97,8 @@ jobs:
         if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
           repo="$( dirname '${{ inputs.image_name }}')"
         fi
+
+
         IMAGE_NAME="${repo}/${name}"
 
         echo 'tags<<EOF' >> $GITHUB_OUTPUT
@@ -99,9 +108,9 @@ jobs:
         echo 'EOF' >> $GITHUB_OUTPUT
 
         echo 'images<<EOF' >> $GITHUB_OUTPUT
-        echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
-        echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-        echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=ghcr.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.BOT_ACCESS_TOKEN }}}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.QUAY_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.DOCKER_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
 
     - name: Login to Dockerhub
@@ -121,7 +130,7 @@ jobs:
           password: ${{ secrets.QUAY_TOKEN }}
 
     - name: Login to GitHub Container Registry
-      if: needs.pre-commit.outputs.version != ''
+      if: needs.pre-commit.outputs.version != '' && env.BOT_ACCESS_TOKEN != ''
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
