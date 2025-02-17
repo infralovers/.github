@@ -112,7 +112,7 @@ jobs:
         echo 'EOF' >> $GITHUB_OUTPUT
 
         echo 'images<<EOF' >> $GITHUB_OUTPUT
-        echo "name=ghcr.io/${IMAGE_NAME},enable=$( [[ -n "${{ inputs.ghcr }}" )" >> $GITHUB_OUTPUT
+        echo "name=ghcr.io/${IMAGE_NAME},enable=${{ inputs.ghcr }}" >> $GITHUB_OUTPUT
         echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.QUAY_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.DOCKER_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
