@@ -7,7 +7,7 @@ on:
     secrets:
       BOT_ACCESS_TOKEN:
         description: 'The GitHub token for the bot account'
-        required: true
+        required: false
       QUAY_USER:
         description: 'The username for the Quay account'
         required: false
