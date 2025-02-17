@@ -7,7 +7,7 @@ on:
     secrets:
       BOT_ACCESS_TOKEN:
         description: 'The GitHub token for the bot account'
-        required: false
+        required: true
       QUAY_USER:
         description: 'The username for the Quay account'
         required: false
@@ -54,6 +54,10 @@ on:
         required: false
         type: string
         default: ''
+      ghcr:
+        type: boolean
+        default: true
+        required: false
 
 env:
   MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
@@ -108,7 +112,7 @@ jobs:
         echo 'EOF' >> $GITHUB_OUTPUT
 
         echo 'images<<EOF' >> $GITHUB_OUTPUT
-        echo "name=ghcr.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.BOT_ACCESS_TOKEN }}}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+        echo "name=ghcr.io/${IMAGE_NAME},enable=$( [[ -n "${{ inputs.ghcr }}" )" >> $GITHUB_OUTPUT
         echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.QUAY_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "${{ secrets.DOCKER_TOKEN }}" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
