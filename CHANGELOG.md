@@ -1,3 +1,10 @@
+## 1.4.27 (2025-04-25)
+
+#### Bug Fixes
+
+* pr validation does not require upper casing anymore (bc135a17)
+
+
 ## 1.4.26 (2025-02-14)
 
 #### Bug Fixes
