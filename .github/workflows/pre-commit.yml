@@ -40,7 +40,7 @@ jobs:
       - uses: pre-commit/action@v3.0.1
         if: steps.precommit_exists.outputs.files_exists == 'true'
         env:
-          SKIP: ${{ github.event.inputs.skip || '' }}
+          SKIP: ${{ inputs.skip }}
 
       - uses: go-semantic-release/action@v1
         id: semrel
