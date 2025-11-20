@@ -56,7 +56,6 @@ jobs:
         uses: hashicorp/vault-action@v2
         with:
           url: https://vault.infralovers.cloud:8200
-          namespace: admin
           method: jwt
           path: jwt_github
           role: tf_mod
