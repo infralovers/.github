@@ -32,7 +32,8 @@ jobs:
         with:
           files: ".pre-commit-config.yaml"
 
-      - uses: jdx/mise-action@v2
+      - name: Setup tools
+        uses: jdx/mise-action@v2
 
       - uses: pre-commit/action@v3.0.1
         if: steps.precommit_exists.outputs.files_exists == 'true'
