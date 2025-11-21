@@ -36,6 +36,6 @@ jobs:
         strategy:
             matrix:
                 tfdir: ${{ fromJson(needs.find_tf.outputs.tfdir) }}
-        uses: infralovers/.github/.github/workflows/terratest-dir.yml@mise-flow
+        uses: infralovers/.github/.github/workflows/terratest-dir.yml@main
         with:
             sourceDir: ${{ matrix.tfdir }}
