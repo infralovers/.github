@@ -32,10 +32,24 @@ jobs:
         with:
           files: ".pre-commit-config.yaml"
 
-      - uses: actions/setup-python@v5
+      - name: Check mise presence
+        id: mise_exists
         if: steps.precommit_exists.outputs.files_exists == 'true'
+        uses: andstor/file-existence-action@v3
         with:
-          python-version: "3.10"
+          files: ".mise.toml"
+
+      - name: Setup mise if not present
+        if: steps.mise_exists.outcome == 'success' && steps.mise_exists.outputs.files_exists == 'false'
+        run: |
+          cat << 'EOF' > .mise.toml
+          [tools]
+          pre-commit = "latest"
+          EOF
+
+      - name: Setup tools
+        if: steps.mise_exists.outcome == 'success'
+        uses: jdx/mise-action@v2
 
       - uses: pre-commit/action@v3.0.1
         if: steps.precommit_exists.outputs.files_exists == 'true'

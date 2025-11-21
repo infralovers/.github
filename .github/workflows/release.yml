@@ -1,33 +1,35 @@
 ---
-
 name: Release Automation template"
 
 on:
   workflow_call:
     secrets:
       BOT_ACCESS_TOKEN:
-        description: 'The GitHub token for the bot account'
+        description: "The GitHub token for the bot account"
         required: true
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
-    - name: Semantic Release
-      uses: go-semantic-release/action@v1
-      id: generate_changelog
-      with:
-        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
-        prepend: true
-        changelog-file: CHANGELOG.md
+      - name: Setup tools
+        uses: jdx/mise-action@v2
 
-    - name: Update changelog
-      uses: stefanzweifel/git-auto-commit-action@v5
-      if: steps.generate_changelog.outputs.version != ''
-      with:
-        commit_message: '[skip ci] chore(ci): ${{ steps.generate_changelog.outputs.version }} changelog'
-        file_pattern: CHANGELOG.md
+      - name: Semantic Release
+        uses: go-semantic-release/action@v1
+        id: generate_changelog
+        with:
+          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+          prepend: true
+          changelog-file: CHANGELOG.md
+
+      - name: Update changelog
+        uses: stefanzweifel/git-auto-commit-action@v5
+        if: steps.generate_changelog.outputs.version != ''
+        with:
+          commit_message: "[skip ci] chore(ci): ${{ steps.generate_changelog.outputs.version }} changelog"
+          file_pattern: CHANGELOG.md
