@@ -1,3 +1,20 @@
+## 1.4.28 (2025-11-21)
+
+#### Bug Fixes
+
+* if no mise config exists compliance (57cde21d)
+* if no mise config exists compliance (ac1a0616)
+* mise usage (aa5da584)
+* mise (484fc3d8)
+* ci allows to set skip variable on pre-commit (f477e106)
+* ci allows to set skip variable on pre-commit (6775a2f1)
+
+#### Code Refactoring
+
+* jwt path (cd3d8fda)
+* jwt path terraform (aa0326ff)
+
+
 ## 1.4.27 (2025-04-25)
 
 #### Bug Fixes
