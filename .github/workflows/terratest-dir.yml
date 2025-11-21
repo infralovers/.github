@@ -52,7 +52,7 @@ jobs:
         id: mise_exists
         uses: andstor/file-existence-action@v3
         with:
-          files: ".mise.toml,mise.toml"
+          files: ".mise.toml"
 
       - name: Setup mise if not present
         if: steps.mise_exists.outcome == 'success' && steps.mise_exists.outputs.files_exists == 'false'
