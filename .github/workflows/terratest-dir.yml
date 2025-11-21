@@ -74,7 +74,7 @@ jobs:
           url: https://vault.infralovers.cloud:8200
           method: jwt
           path: jwt_github
-          role: tf_mod
+          role: terratest
           secrets: |
             aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
             kv/data/op/terraform_il_machine Token | TFE_TOKEN;
