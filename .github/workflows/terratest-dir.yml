@@ -48,6 +48,22 @@ jobs:
         with:
           path: ${{ inputs.sourceDir }}
 
+      - name: Check mise presence
+        id: mise_exists
+        uses: andstor/file-existence-action@v3
+        with:
+          files: ".mise.toml,mise.toml"
+
+      - name: Setup mise if not present
+        if: steps.mise_exists.outcome == 'success' && steps.mise_exists.outputs.files_exists == 'false'
+        run: |
+          cat << 'EOF' > .mise.toml
+          [tools]
+          pre-commit = "latest"
+          go = "latest"
+          terraform = "${{ inputs.terraform_version }}"
+          EOF
+
       - name: Setup tools
         uses: jdx/mise-action@v2
 
@@ -60,7 +76,7 @@ jobs:
           path: jwt_github
           role: tf_mod
           secrets: |
-            aws/dev/${{ inputs.aws_region }}/creds/ec2 * | AWS_;
+            aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
             kv/data/op/terraform_il_machine Token | TFE_TOKEN;
 
       - name: Run Tests
