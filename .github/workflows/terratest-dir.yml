@@ -73,7 +73,7 @@ jobs:
         with:
           url: https://vault.infralovers.cloud:8200
           method: jwt
-          path: jwt_github
+          path: github
           role: terratest
           secrets: |
             aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
