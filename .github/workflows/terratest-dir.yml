@@ -87,8 +87,24 @@ jobs:
           cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
 
       - name: Wait for AWS Credentials
+        env:
+          AWS_REGION: ${{ inputs.aws_region }}
+          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_KEY }}
         run: |
-          sleep 60
+          if command -v aws >/dev/null 2>&1; then
+            echo "AWS CLI is already installed."
+          else
+            mise use aws
+          fi
+          until aws sts get-caller-identity; do
+            echo "Waiting for AWS credentials to be available..."
+            sleep 5
+            if [ $SECONDS -gt 60 ]; then
+              echo "Timed out waiting for AWS credentials."
+              exit 1
+            fi
+          done
 
       - name: Run Tests
         if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
