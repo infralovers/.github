@@ -75,6 +75,7 @@ jobs:
           method: jwt
           path: github
           role: terratest
+          exportToken: true
           secrets: |
             aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
             kv/data/op/terraform_il_machine Token | TFE_TOKEN;
