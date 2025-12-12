@@ -29,6 +29,16 @@ on:
         required: false
         default: "training"
         type: string
+      azure_subscription:
+        description: "Azure subscription"
+        required: false
+        default: "il-development"
+        type: string
+      azure_role:
+        description: "Azure role"
+        required: false
+        default: "contributor"
+        type: string
 
 permissions:
   contents: read
@@ -78,6 +88,7 @@ jobs:
           exportToken: true
           secrets: |
             aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWSD_;
+            azure/${{ inputs.azure_subscription }}/creds/${{ inputs.azure_role }} * | ARM_;
             kv/data/op/terraform_il_machine Token | TFE_TOKEN;
 
       - name: Setup Terraform
