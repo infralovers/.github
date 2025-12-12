@@ -80,6 +80,12 @@ jobs:
             aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWS_;
             kv/data/op/terraform_il_machine Token | TFE_TOKEN;
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
+
       - name: Run Tests
         if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
         shell: bash
