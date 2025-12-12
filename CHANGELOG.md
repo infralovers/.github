@@ -1,3 +1,10 @@
+## 1.4.29 (2025-12-12)
+
+#### Bug Fixes
+
+* vault auth + terratest action (#26) (bf61507c)
+
+
 ## 1.4.28 (2025-11-21)
 
 #### Bug Fixes
