@@ -112,8 +112,8 @@ jobs:
         working-directory: ${{ inputs.sourceDir }}
         env:
           AWS_REGION: ${{ inputs.aws_region }}
-          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWS_SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWSD_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWSD_SECRET_KEY }}
         run: |
           go mod download
           go test -timeout ${{ inputs.test_timeout }} -v ./...
