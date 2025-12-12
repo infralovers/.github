@@ -1,6 +1,11 @@
 ---
 name: Terraform Testing - Directory
 
+env:
+  VAULT_ADDR: "https://vault.infralovers.com:8200"
+  ARM_SUBSCRIPTION_ID: 06e7b06d-ce0c-4e32-9773-134e6e7adc5f
+  ARM_TENANT_ID: 799c31c1-7d99-440c-bea1-efe48d1ddd6f
+
 on:
   workflow_call:
     inputs:
