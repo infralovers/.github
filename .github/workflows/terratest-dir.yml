@@ -86,6 +86,10 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
           cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
 
+      - name: Wait for AWS Credentials
+        run: |
+          sleep 60
+
       - name: Run Tests
         if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
         shell: bash
