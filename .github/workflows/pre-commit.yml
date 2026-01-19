@@ -49,7 +49,10 @@ jobs:
 
       - name: Setup tools
         if: steps.mise_exists.outcome == 'success'
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v3
+        with:
+          cache: false
+          experimental: true
 
       - uses: pre-commit/action@v3.0.1
         if: steps.precommit_exists.outputs.files_exists == 'true'
