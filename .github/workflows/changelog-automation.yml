@@ -5,12 +5,29 @@ on:
   workflow_call:
 
 jobs:
+  fetch_bot_token:
+    runs-on: ubuntu-latest
+    outputs:
+      bot_token: ${{ steps.fetch_token.outputs.bot_token }}
+    steps:
+      - name: Fetch Bot Token from Vault
+        id: fetch_token
+        uses: hashicorp/vault-action@v2
+        with:
+          url: https://vault.infralovers.cloud:8200
+          method: jwt
+          role: terratest
+          secrets: |
+            kv/data/op/github_infralovers PAT | bot_token;
+
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: "${{ needs.fetch_bot_token.outputs.bot_token }}"
 
   release:
     needs: [prebuild]
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: "${{ needs.fetch_bot_token.outputs.bot_token }}"
