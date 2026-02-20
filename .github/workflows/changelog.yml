@@ -3,12 +3,29 @@ name: Infralovers Changelog Automation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
+  get_bot_token:
+    runs-on: ubuntu-latest
+    outputs:
+      bot_token: ${{ steps.get_token.outputs.bot_token }}
+    steps:
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: https://vault.infralovers.cloud:8200
+          method: jwt
+          path: github
+          role: terratest
+          exportToken: true
+          secrets: |
+            kv/data/op/github_infralovers PAT | bot_token;
+
   changelog-automation:
     uses: infralovers/.github/.github/workflows/changelog-automation.yml@main
     secrets:
-      BOT_ACCESS_TOKEN: "${{ fromJSON(secrets.VAULT_KV_1D187965_OP_GITHUB_INFRALOVERS).PAT }}"
+      BOT_ACCESS_TOKEN: "${{ steps.get_bot_token.outputs.bot_token }}"
