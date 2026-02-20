@@ -3,10 +3,6 @@ name: "Infralovers Changelog Automation template"
 
 on:
   workflow_call:
-    secrets:
-      BOT_ACCESS_TOKEN:
-        description: 'The GitHub token for the bot account'
-        required: true
 
 jobs:
   prebuild:
@@ -14,7 +10,7 @@ jobs:
     secrets: inherit
 
   release:
-    needs: [ prebuild ]
+    needs: [prebuild]
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
     secrets: inherit
