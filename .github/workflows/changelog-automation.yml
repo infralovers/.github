@@ -3,18 +3,19 @@ name: "Infralovers Changelog Automation template"
 
 on:
   workflow_call:
-    secrets:
-      BOT_ACCESS_TOKEN:
-        description: 'The GitHub token for the bot account'
-        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   release:
-    needs: [ prebuild ]
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
-    secrets: inherit
+    secrets:
+      BOT_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

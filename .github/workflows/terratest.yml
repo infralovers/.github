@@ -1,13 +1,43 @@
 ---
-name: Terraform Testing
+name: Terraform Testing - Directory
+
+env:
+    VAULT_ADDR: "https://vault.infralovers.cloud:8200"
+    ARM_SUBSCRIPTION_ID: 06e7b06d-ce0c-4e32-9773-134e6e7adc5f
+    ARM_TENANT_ID: 799c31c1-7d99-440c-bea1-efe48d1ddd6f
 
 on:
     workflow_call:
         inputs:
             sourceDir:
                 description: "Terraform directory to analyze"
-                required: false
+                required: true
                 default: "."
+                type: string
+            test_timeout:
+                description: "Test timeout"
+                required: false
+                default: "30m"
+                type: string
+            aws_region:
+                description: "AWS region"
+                required: false
+                default: "eu-central-1"
+                type: string
+            aws_role:
+                description: "AWS role"
+                required: false
+                default: "training"
+                type: string
+            azure_subscription:
+                description: "Azure subscription"
+                required: false
+                default: "il-development"
+                type: string
+            azure_role:
+                description: "Azure role"
+                required: false
+                default: "contributor"
                 type: string
 
 permissions:
@@ -15,27 +45,106 @@ permissions:
     id-token: write
 
 jobs:
-    find_tf:
+    terratest:
         runs-on: ubuntu-latest
-        outputs:
-            tfdir: ${{ steps.find_tf.outputs.tfdir }}
+
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Find Terraform files
-              working-directory: ${{ github.event.inputs.sourceDir }}
-              id: find_tf
-              run: |
-                  dirs=$(find . -type f -name "go.mod" -exec dirname {} \; | sort | uniq | grep -v examples)
-                  TFDIR=$( echo "${dirs}" | jq -R -s -c 'split("\n")' | jq 'del(.[] | select(. == ""))' -rc )
-                  echo "tfdir=${TFDIR}" >> $GITHUB_OUTPUT
+            - name: Check go.mod presence
+              id: gomod_exists
+              uses: andstor/file-existence-action@v3
+              with:
+                  files: "go.mod"
 
-    terratest:
-        needs: [find_tf]
-        strategy:
-            matrix:
-                tfdir: ${{ fromJson(needs.find_tf.outputs.tfdir) }}
-        uses: infralovers/.github/.github/workflows/terratest-dir.yml@main
-        with:
-            sourceDir: ${{ matrix.tfdir }}
+            - name: Check if ${{ inputs.sourceDir }} changed
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
+              id: detect
+              uses: tj-actions/changed-files@v44
+              with:
+                  path: ${{ inputs.sourceDir }}
+
+            - name: Check mise presence
+              if: steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch'
+              id: mise_exists
+              uses: andstor/file-existence-action@v3
+              with:
+                  files: ".mise.toml"
+
+            - name: Setup mise if not present
+              if: steps.mise_exists.outcome == 'success' && steps.mise_exists.outputs.files_exists == 'false'
+              run: |
+                  cat << 'EOF' > .mise.toml
+                  [tools]
+                  pre-commit = "latest"
+                  go = "latest"
+                  terraform = "${{ inputs.terraform_version }}"
+                  EOF
+
+            - name: Setup tools
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
+              uses: jdx/mise-action@v2
+
+            - name: Import Secrets
+              id: import-secrets
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
+              uses: hashicorp/vault-action@v2
+              with:
+                  url: https://vault.infralovers.cloud:8200
+                  method: jwt
+                  path: github
+                  role: terratest
+                  exportToken: true
+                  secrets: |
+                      aws/dev/${{ inputs.aws_region }}/creds/${{ inputs.aws_role }} * | AWSD_;
+                      azure/${{ inputs.azure_subscription }}/creds/${{ inputs.azure_role }} * | ARM_;
+                      kv/data/op/terraform_il_machine Token | TFE_TOKEN;
+
+            - name: Setup Terraform
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
+              uses: hashicorp/setup-terraform@v2
+              with:
+                  terraform_version: ${{ inputs.terraform_version }}
+                  terraform_wrapper: false
+                  cli_config_credentials_token: ${{ steps.import-secrets.outputs.TFE_TOKEN }}
+
+            - name: Wait for AWS Credentials
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
+              env:
+                  AWS_REGION: ${{ inputs.aws_region }}
+                  AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWSD_ACCESS_KEY }}
+                  AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWSD_SECRET_KEY }}
+              run: |
+                  if command -v aws >/dev/null 2>&1; then
+                    echo "AWS CLI is already installed."
+                  else
+                    mise use aws
+                  fi
+                  until aws sts get-caller-identity; do
+                    echo "Waiting for AWS credentials to be available..."
+                    sleep 5
+                    if [ $SECONDS -gt 60 ]; then
+                      echo "Timed out waiting for AWS credentials."
+                      exit 1
+                    fi
+                  done
+
+            - name: Run Tests
+              if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true' && (steps.detect.outputs.all_changed_files != '' || github.event_name == 'workflow_dispatch')
+              shell: bash
+              working-directory: ${{ inputs.sourceDir }}
+              env:
+                  AWS_REGION: ${{ inputs.aws_region }}
+                  AWS_ACCESS_KEY_ID: ${{ steps.import-secrets.outputs.AWSD_ACCESS_KEY }}
+                  AWS_SECRET_ACCESS_KEY: ${{ steps.import-secrets.outputs.AWSD_SECRET_KEY }}
+              run: |
+                  go mod download
+                  go test -timeout ${{ inputs.test_timeout }} -v ./...
+
+            # - name: Post Test Summary
+            #   uses: test-summary/action@v2
+            #   with:
+            #     paths: |
+            #       ${{ inputs.sourceDir }}/report.xml
+            #   if: always()
