@@ -27,8 +27,8 @@ jobs:
               working-directory: ${{ github.event.inputs.sourceDir }}
               id: find_tf
               run: |
-                  dirs=$(find . -type f -name "go.mod" -exec dirname {} \; | sort | uniq | grep -v examples)
-                  TFDIR=$( echo "${dirs}" | jq -R -s -c 'split("\n")' | jq 'del(.[] | select(. == ""))' -rc )
+                  dirs=$(find . -type f -name "go.mod" -not -path "./examples/*" -not -path "./.terraform/*"  -exec dirname {} \;  | sort | uniq )
+                  TFDIR=$( echo "${dirs}" | jq -Rsc 'split("\n")' | jq -rc 'del(.[] | select(. == ""))' )
                   echo "tfdir=${TFDIR}" >> $GITHUB_OUTPUT
 
     terratest:
