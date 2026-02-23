@@ -27,6 +27,7 @@ jobs:
               working-directory: ${{ github.event.inputs.sourceDir }}
               id: find_tf
               run: |
+                  set -exo pipefail
                   dirs=$(find . -type f -name "go.mod" -not -path "./examples/*" -not -path "./.terraform/*"  -exec dirname {} \;  | sort | uniq )
                   TFDIR=$( echo "${dirs}" | jq -Rsc 'split("\n")' | jq -rc 'del(.[] | select(. == ""))' )
                   echo "tfdir=${TFDIR}" >> $GITHUB_OUTPUT
