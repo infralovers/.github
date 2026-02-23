@@ -12,10 +12,10 @@ jobs:
   prebuild:
     uses: ./.github/workflows/pre-commit.yml
     secrets:
-      BOT_ACCESS_TOKEN: "${{ github.token }}"
+      BOT_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   release:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
     secrets:
-      BOT_ACCESS_TOKEN: "${{ github.token }}"
+      BOT_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
