@@ -1,182 +1,197 @@
 ---
-
 name: Container Workflow template"
 
 on:
   workflow_call:
     secrets:
       BOT_ACCESS_TOKEN:
-        description: 'The GitHub token for the bot account'
+        description: "The GitHub token for the bot account"
         required: true
       QUAY_USER:
-        description: 'The username for the Quay account'
+        description: "The username for the Quay account"
         required: false
       QUAY_TOKEN:
-        description: 'The token for the Quay account'
+        description: "The token for the Quay account"
         required: false
       MONDOO_SERVICE_ACCOUNT:
-        description: 'The service account for the Mondo service'
+        description: "The service account for the Mondo service"
         required: false
     inputs:
       release:
-        description: 'also run release workflow'
+        description: "also run release workflow"
         required: false
         type: boolean
         default: false
       dockerfile:
-        description: 'The path to the Dockerfile'
+        description: "The path to the Dockerfile"
         required: true
         type: string
-        default: 'Dockerfile'
+        default: "Dockerfile"
       score:
-        description: 'The score threshold for the image'
+        description: "The score threshold for the image"
         required: false
         type: number
         default: 60
       platforms:
-        description: 'The platforms to build for'
+        description: "The platforms to build for"
         required: false
         type: string
-        default: 'linux/amd64'
+        default: "linux/amd64"
       image_name:
-        description: 'The name of the image'
+        description: "The name of the image"
         required: false
         type: string
-        default: ''
+        default: ""
       build_args:
-        description: 'The build arguments for the image'
+        description: "The build arguments for the image"
         required: false
         type: string
-        default: ''
+        default: ""
 
-env:
-  MONDOO_CONFIG_BASE64: ${{ secrets.MONDOO_SERVICE_ACCOUNT }}
-  QUAY_USER: ${{ secrets.QUAY_USER }}
-  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+permissions:
+  contents: read
+  id-token: write
+  packages: write
 
 jobs:
-
   pre-commit:
     uses: ./.github/workflows/pre-commit.yml
-    secrets:
-      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
   build:
     runs-on: ubuntu-latest
     needs: [pre-commit]
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: go-semantic-release/action@v1
-      id: semrel
-      with:
-        github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
-        prepend: true
-        dry: true
+      - name: Vault Secrets
+        id: vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.infralovers.cloud:8200
+          method: jwt
+          path: github
+          role: terratest
+          exportToken: true
+          secrets: |
+            kv/data/op/dockerhub_infra_machine username | DOCKER_USER;
+            kv/data/op/dockerhub_infra_machine token | DOCKER_TOKEN;
+            kv/data/op/quay_robot_account username | QUAY_USER;
+            kv/data/op/quay_robot_account password | QUAY_TOKEN;
+            kv/data/op/github_infralovers PAT | PACKER_GITHUB_API_TOKEN;
+            kv/data/op/mondoo_packer_agent password | MONDOO_CONFIG_BASE64;
 
-    - name: Get directory of ${{ inputs.dockerfile }}
-      id: get_dir
-      run: |
-        echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
+      - uses: go-semantic-release/action@v1
+        id: semrel
+        with:
+          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+          prepend: true
+          dry: true
 
-    - name: Prepare tagging
-      id: prep
-      run: |
-        name="$(basename ${{ github.repository }})"
-        if [[ -n "${{ inputs.image_name }}" ]]; then
-          name="$( basename '${{ inputs.image_name }}')"
-        fi
-        repo=${{ github.repository_owner }}
-        if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
-          repo="$( dirname '${{ inputs.image_name }}')"
-        fi
-        IMAGE_NAME="${repo}/${name}"
+      - name: Get directory of ${{ inputs.dockerfile }}
+        id: get_dir
+        run: |
+          echo "docker_directory=$(dirname ${{ inputs.dockerfile }})" >> $GITHUB_OUTPUT
 
-        echo 'tags<<EOF' >> $GITHUB_OUTPUT
-        echo "type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}" >> $GITHUB_OUTPUT
-        echo "type=schedule,pattern=nightly" >> $GITHUB_OUTPUT
-        echo "type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr" >> $GITHUB_OUTPUT
-        echo 'EOF' >> $GITHUB_OUTPUT
+      - name: Prepare tagging
+        id: prep
+        run: |
+          name="$(basename ${{ github.repository }})"
+          if [[ -n "${{ inputs.image_name }}" ]]; then
+            name="$( basename '${{ inputs.image_name }}')"
+          fi
+          repo=${{ github.repository_owner }}
+          if [[ -n "${{ inputs.image_name }}" ]] && [[ "${name}" != "${{ inputs.image_name}}" ]]; then
+            repo="$( dirname '${{ inputs.image_name }}')"
+          fi
+          IMAGE_NAME="${repo}/${name}"
 
-        echo 'images<<EOF' >> $GITHUB_OUTPUT
-        echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
-        echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-        echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-        echo 'EOF' >> $GITHUB_OUTPUT
+          echo 'tags<<EOF' >> $GITHUB_OUTPUT
+          echo "type=semver,pattern={{version}},value=${{ needs.pre-commit.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "type=schedule,pattern=nightly" >> $GITHUB_OUTPUT
+          echo "type=ref,enable=true,priority=600,prefix=pr-,suffix=,event=pr" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
-    - name: Login to Dockerhub
-      if: needs.pre-commit.outputs.version != '' && env.DOCKER_USER != ''
-      uses: docker/login-action@v3
-      with:
+          echo 'images<<EOF' >> $GITHUB_OUTPUT
+          echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
+          echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Login to Dockerhub
+        if: needs.pre-commit.outputs.version != ''
+        uses: docker/login-action@v3
+        with:
           registry: docker.io
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          username: ${{ steps.vault.outputs.DOCKER_USER }}
+          password: ${{ steps.vault.outputs.DOCKER_TOKEN }}
 
-    - name: Login to Quay
-      if: needs.pre-commit.outputs.version != '' && env.QUAY_USER != ''
-      uses: docker/login-action@v3
-      with:
+      - name: Login to Quay
+        if: needs.pre-commit.outputs.version != ''
+        uses: docker/login-action@v3
+        with:
           registry: quay.io
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
+          username: ${{ steps.vault.outputs.QUAY_USER }}
+          password: ${{ steps.vault.outputs.QUAY_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      if: needs.pre-commit.outputs.version != ''
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - name: Login to GitHub Container Registry
+        if: needs.pre-commit.outputs.version != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ steps.prep.outputs.images }}
-        tags: ${{ steps.prep.outputs.tags }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.prep.outputs.images }}
+          tags: ${{ steps.prep.outputs.tags }}
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build Container Image
-      id: docker_build
-      uses: docker/build-push-action@v6
-      with:
-        push: false
-        load: true
-        context: ${{ steps.get_dir.outputs.docker_directory }}
-        file: ${{ inputs.dockerfile }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        build-args: ${{ inputs.build_args }}
+      - name: Build Container Image
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          load: true
+          context: ${{ steps.get_dir.outputs.docker_directory }}
+          file: ${{ inputs.dockerfile }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ inputs.build_args }}
 
-    - name: Scan Docker Image
-      if: env.MONDOO_CONFIG_BASE64 != '' && inputs.score > 0
-      uses: mondoohq/actions/docker-image@v11.0.0
-      with:
+      - name: Scan Docker Image
+        if: inputs.score > 0
+        uses: mondoohq/actions/docker-image@v13.0.0
+        env:
+          MONDOO_CONFIG_BASE64: ${{ steps.vault.outputs.MONDOO_CONFIG_BASE64 }}
+        with:
           image: ${{ fromJson(steps.meta.outputs.json).tags[0] }}
           score-threshold: ${{ inputs.score }}
 
-    - name: Publish container
-      if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
-      id: docker_publish
-      uses: docker/build-push-action@v6
-      with:
-        push: true
-        load: false
-        context: ${{ steps.get_dir.outputs.docker_directory }}
-        file: ${{ inputs.dockerfile }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        build-args: ${{ inputs.build_args }}
-        platforms: ${{ inputs.platforms }}
+      - name: Publish container
+        if: ${{ github.event_name != 'pull_request' && needs.pre-commit.outputs.version != '' }}
+        id: docker_publish
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          load: false
+          context: ${{ steps.get_dir.outputs.docker_directory }}
+          file: ${{ inputs.dockerfile }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ inputs.build_args }}
+          platforms: ${{ inputs.platforms }}
 
   release:
-    needs: [ pre-commit, build ]
+    needs: [pre-commit, build]
     if: inputs.release && github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
     secrets:
-      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+      BOT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

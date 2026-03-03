@@ -27,5 +27,3 @@ jobs:
 
   changelog-automation:
     uses: infralovers/.github/.github/workflows/changelog-automation.yml@main
-    secrets:
-      BOT_ACCESS_TOKEN: "${{ steps.get_bot_token.outputs.bot_token }}"
