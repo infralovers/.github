@@ -1,12 +1,11 @@
 ---
 name: Pre-Commit validation
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
-    secrets:
-      BOT_ACCESS_TOKEN:
-        description: "The GitHub token for the bot account"
-        required: true
     inputs:
       skip:
         description: "Comma-separated list of hooks to skip"
@@ -62,6 +61,6 @@ jobs:
       - uses: go-semantic-release/action@v1
         id: semrel
         with:
-          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           prepend: true
           dry: true
