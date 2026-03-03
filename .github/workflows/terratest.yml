@@ -89,7 +89,7 @@ jobs:
             - name: Import Secrets
               id: import-secrets
               if: steps.gomod_exists.outcome == 'success' && steps.gomod_exists.outputs.files_exists == 'true'
-              uses: hashicorp/vault-action@v2
+              uses: hashicorp/vault-action@v3
               with:
                   url: https://vault.infralovers.cloud:8200
                   method: jwt
