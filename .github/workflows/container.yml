@@ -180,5 +180,3 @@ jobs:
     needs: [pre-commit, build]
     if: inputs.release && github.event_name != 'pull_request'
     uses: ./.github/workflows/release.yml
-    secrets:
-      BOT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
