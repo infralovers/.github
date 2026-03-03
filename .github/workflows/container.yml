@@ -71,7 +71,7 @@ jobs:
       - uses: go-semantic-release/action@v1
         id: semrel
         with:
-          github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           prepend: true
           dry: true
 
