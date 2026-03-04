@@ -1,3 +1,10 @@
+## 1.4.35 (2026-03-04)
+
+#### Bug Fixes
+
+* container workflow enable/disable registries (922240fc)
+
+
 ## 1.4.30 (2025-12-12)
 
 #### Bug Fixes
