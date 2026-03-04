@@ -34,6 +34,21 @@ on:
         required: false
         type: string
         default: ""
+      push_dockerhub:
+        description: "Whether to push to Dockerhub"
+        required: false
+        type: boolean
+        default: true
+      push_github:
+        description: "Whether to push to GitHub Container Registry"
+        required: false
+        type: boolean
+        default: true
+      push_quay:
+        description: "Whether to push to Quay"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -100,9 +115,9 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
           echo 'images<<EOF' >> $GITHUB_OUTPUT
-          echo "name=ghcr.io/${IMAGE_NAME},enable=true" >> $GITHUB_OUTPUT
-          echo "name=quay.io/${IMAGE_NAME},enable=$( [[ -n "***" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
-          echo "name=docker.io/${IMAGE_NAME},enable=$( [[ -n "" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "name=ghcr.io/${IMAGE_NAME},enable=$( [[ "${{ inputs.push_github }}" == "true" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "name=quay.io/${IMAGE_NAME},enable=$( [[ "${{ inputs.push_quay }}" == "true" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "name=docker.io/${IMAGE_NAME},enable=$( [[ "${{ inputs.push_dockerhub }}" == "true" ]] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Login to Dockerhub
